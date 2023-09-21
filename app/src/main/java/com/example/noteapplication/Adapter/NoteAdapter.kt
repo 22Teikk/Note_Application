@@ -1,8 +1,12 @@
 package com.example.noteapplication.Adapter
 
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapplication.Model.Note
@@ -13,6 +17,7 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
         val textTitle = itemView.findViewById<TextView>(R.id.textTitle)
         val textSubTitle = itemView.findViewById<TextView>(R.id.textSubTitle)
         val textDateTime = itemView.findViewById<TextView>(R.id.textDateTime)
+        val layoutNote = itemView.findViewById<LinearLayout>(R.id.layoutNote)
     }
 
     var listNote = ArrayList<Note>()
@@ -31,6 +36,8 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
         holder.textTitle.setText(currentNote.title)
         holder.textSubTitle.setText(currentNote.subTitle)
         holder.textDateTime.setText(currentNote.dateTime)
+        var gradientDrawable: GradientDrawable = holder.layoutNote.background as GradientDrawable
+        gradientDrawable.setColor(Color.parseColor(currentNote.color))
     }
 
     fun updateList(newList: List<Note>) {

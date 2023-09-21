@@ -116,4 +116,5 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <include layout="@layout/option_note"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
