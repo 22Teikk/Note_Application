@@ -5,13 +5,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_gravity="center"
     android:layout_margin="@dimen/_10sdp"
-    android:id="@+id/layoutAddURLView"
+    android:id="@+id/layoutDeleteNote"
     android:background="@color/colorPrimary">
 
     <ImageView
         android:layout_width="@dimen/_25sdp"
         android:layout_height="@dimen/_25sdp"
-        android:id="@+id/imageAddURL"
+        android:id="@+id/imageDeleteNote"
         android:layout_marginStart="@dimen/_8sdp"
         android:layout_marginTop="@dimen/_8sdp"
         android:contentDescription="@string/app_name"
@@ -28,10 +28,10 @@
         android:text="@string/add_url"
         android:textColor="@color/colorWhite"
         android:textSize="@dimen/_14ssp"
-        app:layout_constraintBottom_toBottomOf="@id/imageAddURL"
+        app:layout_constraintBottom_toBottomOf="@id/imageDeleteNote"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/imageAddURL"
-        app:layout_constraintTop_toTopOf="@id/imageAddURL"/>
+        app:layout_constraintStart_toEndOf="@id/imageDeleteNote"
+        app:layout_constraintTop_toTopOf="@id/imageDeleteNote"/>
 
     <EditText
         android:layout_width="match_parent"
@@ -52,7 +52,7 @@
         android:paddingEnd="@dimen/_8sdp"
         android:textColorHint="@color/colorIcon"
         android:textSize="@dimen/_13ssp"
-        app:layout_constraintTop_toBottomOf="@id/imageAddURL"/>
+        app:layout_constraintTop_toBottomOf="@id/imageDeleteNote"/>
 
     <TextView
         android:id="@+id/textAdd"

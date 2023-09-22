@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -12,7 +11,6 @@ import android.provider.MediaStore
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -24,12 +22,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.noteapplication.Model.Note
 import com.example.noteapplication.R
 import com.example.noteapplication.Utilities.Converters
 import com.example.noteapplication.ViewModel.NoteViewModel
 import com.example.noteapplication.databinding.ActivityAddNoteBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -53,7 +53,7 @@ class AddNoteActivity : AppCompatActivity() {
                     selectedImagePath = Converters.bitmapToString(bitmap)
                     binding.imageNote.setImageBitmap(bitmap)
                     binding.imageNote.visibility = View.VISIBLE
-
+                    binding.imageRemoveImage.visibility = View.VISIBLE
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -67,8 +67,10 @@ class AddNoteActivity : AppCompatActivity() {
         noteViewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
         layoutOptionColor = findViewById<LinearLayout>(R.id.layoutOptionNote)
         try {
-            isUpdate = true
+
             oldNote = intent.getSerializableExtra("note") as Note
+            if (oldNote != null)
+                isUpdate = true
             oldID = oldNote.id
             binding.inputNoteTitle.setText(oldNote.title)
             binding.textDateTime.setText(oldNote.dateTime)
@@ -78,11 +80,13 @@ class AddNoteActivity : AppCompatActivity() {
                 selectedImagePath = oldNote.imagePath
                 binding.imageNote.setImageBitmap(Converters.stringToBitmap(oldNote.imagePath))
                 binding.imageNote.visibility = View.VISIBLE
+                binding.imageRemoveImage.visibility = View.VISIBLE
             }
-            if (oldNote.webLink != null) {
+            if (oldNote.webLink != "") {
                 selectedUri = oldNote.webLink
                 binding.textWebURL.setText(oldNote.webLink)
                 binding.layoutWebURL.visibility = View.VISIBLE
+                binding.imageRemoveURL.visibility = View.VISIBLE
             }
             if (oldNote.color != "#333333") {
                 selectedColor = oldNote.color
@@ -119,6 +123,21 @@ class AddNoteActivity : AppCompatActivity() {
             selectedImagePath = ""
             selectedUri = ""
         }
+
+        binding.imageRemoveURL.setOnClickListener {
+            binding.textWebURL.setText(null)
+            binding.layoutWebURL.visibility = View.GONE
+            binding.imageRemoveURL.visibility = View.GONE
+            selectedUri = ""
+        }
+
+        binding.imageRemoveImage.setOnClickListener {
+            binding.imageNote.setImageBitmap(null)
+            binding.imageNote.visibility = View.GONE
+            selectedImagePath = ""
+            binding.imageRemoveImage.visibility = View.GONE
+        }
+
         intiOptionColor()
         setViewSubtitleColor()
         binding.imageBack.setOnClickListener {
@@ -160,12 +179,34 @@ class AddNoteActivity : AppCompatActivity() {
 
 
     private fun intiOptionColor() {
+        //Click vào hiển thị more option
         val bottomSheetBehavior = BottomSheetBehavior.from(layoutOptionColor)
         layoutOptionColor.findViewById<TextView>(R.id.textOption).setOnClickListener {
             if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED) {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
             }else bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
+
+        setClickColor()
+
+        //Add Image
+        layoutOptionColor.findViewById<LinearLayout>(R.id.layoutAddImage).setOnClickListener {
+            val permission: Array<String> = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            if (ContextCompat.checkSelfPermission(applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, permission, 123)
+            }else selectImage()
+        }
+
+        //Add URL
+        layoutOptionColor.findViewById<LinearLayout>(R.id.layoutAddURL).setOnClickListener {
+            bottomSheetBehavior.state = (BottomSheetBehavior.STATE_COLLAPSED)
+            showDialogURL()
+        }
+
+    }
+
+    private fun setClickColor() {
         layoutOptionColor.findViewById<View>(R.id.viewColor1).setOnClickListener {
             selectedColor = "#E79797"
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor1).setImageResource(R.drawable.baseline_done_24)
@@ -226,23 +267,6 @@ class AddNoteActivity : AppCompatActivity() {
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor1).setImageResource(0)
             setViewSubtitleColor()
         }
-
-
-
-        //Add Image
-        layoutOptionColor.findViewById<LinearLayout>(R.id.layoutAddImage).setOnClickListener {
-            val permission: Array<String> = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-            if (ContextCompat.checkSelfPermission(applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, permission, 123)
-            }else selectImage()
-        }
-
-        //Add URL
-        layoutOptionColor.findViewById<LinearLayout>(R.id.layoutAddURLView).setOnClickListener {
-            bottomSheetBehavior.state = (BottomSheetBehavior.STATE_COLLAPSED)
-            showDialogURL()
-        }
     }
 
     private fun selectImage() {
@@ -286,6 +310,7 @@ class AddNoteActivity : AppCompatActivity() {
                 binding.textWebURL.text = inputURL.text
                 selectedUri = inputURL.text.toString()
                 binding.layoutWebURL.visibility = View.VISIBLE
+                binding.imageRemoveURL.visibility = View.VISIBLE
                 alertDialog.dismiss()
             }
         }
@@ -294,5 +319,6 @@ class AddNoteActivity : AppCompatActivity() {
         }
         alertDialog.show()
     }
+
 
 }

@@ -13,6 +13,8 @@ import com.example.noteapplication.Model.Note
 import com.example.noteapplication.R
 import com.example.noteapplication.Utilities.Converters
 import com.makeramen.roundedimageview.RoundedImageView
+import java.util.Timer
+import java.util.TimerTask
 
 class NoteAdapter(
     val notesListener: NotesListener
@@ -53,6 +55,11 @@ class NoteAdapter(
         holder.layoutNote.setOnClickListener {
             notesListener.onNoteClicked(currentNote)
         }
+
+        holder.layoutNote.setOnLongClickListener {
+            notesListener.onNoteLongClicked(currentNote, holder.layoutNote)
+            true
+        }
     }
 
     fun updateList(newList: List<Note>) {
@@ -61,5 +68,18 @@ class NoteAdapter(
         notifyDataSetChanged()
     }
 
-
+    public fun filter(query: String) {
+        var filterList = listNote
+        filterList.clear()
+        if (query.isEmpty()) {
+            filterList.addAll(listNote)
+        } else {
+            for (item in listNote) {
+                if (item.title.toLowerCase().contains(query.toLowerCase())) {
+                    filterList.add(item)
+                }
+            }
+        }
+        notifyDataSetChanged()
+    }
 }

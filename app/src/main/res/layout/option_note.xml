@@ -176,7 +176,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/_35sdp"
-        android:id="@+id/layoutAddURLView"
+        android:id="@+id/layoutAddURL"
         android:layout_marginStart="@dimen/_10sdp"
         android:layout_marginEnd="@dimen/_10sdp"
         android:layout_marginBottom="@dimen/_10sdp"
@@ -197,4 +197,5 @@
             android:text="@string/add_url"
             android:textSize="@dimen/_12ssp"/>
     </LinearLayout>
+
 </LinearLayout>

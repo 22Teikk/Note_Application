@@ -36,15 +36,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textMyNotes">
 
-        <ImageView
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
-            android:background="@color/colorWhite"
-            android:contentDescription="@string/app_name"
-            android:src="@drawable/baseline_manage_search_24"
-            app:tint="@color/colorSearch" />
-
-        <EditText
+        <androidx.appcompat.widget.SearchView
             android:id="@+id/inputSearch"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_35sdp"
@@ -56,7 +48,7 @@
             android:includeFontPadding="false"
             android:inputType="text"
             android:textColor="@color/colorWhite"
-            android:textColorHint="@color/colorQuick"
+            android:textColorHint="@color/colorPrimaryDark"
             android:textSize="@dimen/_13sdp" />
 
     </LinearLayout>
