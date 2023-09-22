@@ -44,7 +44,8 @@ class AddNoteActivity : AppCompatActivity() {
     private var selectedUri: String = ""
     private var isUpdate = false
     private lateinit var oldNote: Note
-    val arl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->        if (result.resultCode == RESULT_OK) {
+    val arl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
             val imageView = result.data?.data as Uri
             if (imageView != null) {
                 try {
@@ -122,6 +123,21 @@ class AddNoteActivity : AppCompatActivity() {
             selectedColor = "#333333"
             selectedImagePath = ""
             selectedUri = ""
+        }
+
+        if (intent.getBooleanExtra("fromQuickAction", false)) {
+            if (intent.getStringExtra("type").toString().equals("image")) {
+                selectedImagePath = intent.getStringExtra("image").toString()
+                binding.imageNote.visibility = View.VISIBLE
+                binding.imageNote.setImageBitmap(Converters.stringToBitmap(selectedImagePath))
+                binding.imageRemoveImage.visibility = View.VISIBLE
+            }
+            if (intent.getStringExtra("type").toString().equals("uri")) {
+                selectedUri = intent.getStringExtra("uri").toString()
+                binding.textWebURL.setText(selectedUri)
+                binding.layoutWebURL.visibility = View.VISIBLE
+                binding.imageRemoveURL.visibility = View.VISIBLE
+            }
         }
 
         binding.imageRemoveURL.setOnClickListener {
