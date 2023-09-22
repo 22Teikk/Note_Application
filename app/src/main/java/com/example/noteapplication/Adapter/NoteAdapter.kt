@@ -2,7 +2,6 @@ package com.example.noteapplication.Adapter
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +10,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapplication.Model.Note
 import com.example.noteapplication.R
+import com.example.noteapplication.Utilities.Converters
+import com.makeramen.roundedimageview.RoundedImageView
 
 class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
     inner class NoteViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
@@ -18,6 +19,7 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
         val textSubTitle = itemView.findViewById<TextView>(R.id.textSubTitle)
         val textDateTime = itemView.findViewById<TextView>(R.id.textDateTime)
         val layoutNote = itemView.findViewById<LinearLayout>(R.id.layoutNote)
+        val imageNoteItem = itemView.findViewById<RoundedImageView>(R.id.imageNoteItem)
     }
 
     var listNote = ArrayList<Note>()
@@ -38,6 +40,14 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
         holder.textDateTime.setText(currentNote.dateTime)
         var gradientDrawable: GradientDrawable = holder.layoutNote.background as GradientDrawable
         gradientDrawable.setColor(Color.parseColor(currentNote.color))
+
+        if (currentNote.imagePath != null) {
+            var bitmap = Converters.stringToBitmap(currentNote.imagePath)
+            holder.imageNoteItem.setImageBitmap(bitmap)
+            holder.imageNoteItem.visibility = View.VISIBLE
+        }else
+            holder.imageNoteItem.visibility = View.GONE
+
     }
 
     fun updateList(newList: List<Note>) {
@@ -45,4 +55,6 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
         listNote.addAll(newList)
         notifyDataSetChanged()
     }
+
+
 }

@@ -1,30 +1,56 @@
 package com.example.noteapplication.Activity
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.ColorFilter
 import android.graphics.drawable.GradientDrawable
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.noteapplication.Model.Note
 import com.example.noteapplication.R
+import com.example.noteapplication.Utilities.Converters
 import com.example.noteapplication.ViewModel.NoteViewModel
 import com.example.noteapplication.databinding.ActivityAddNoteBinding
-import com.example.noteapplication.databinding.OptionNoteBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import java.text.SimpleDateFormat
 import java.util.Date
+
 
 class AddNoteActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddNoteBinding
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var selectedColor: String
+    private lateinit var selectedImagePath: String
+
+    val arl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->        if (result.resultCode == RESULT_OK) {
+            val imageView = result.data?.data as Uri
+            if (imageView != null) {
+                try {
+                    var inputStream = contentResolver.openInputStream(imageView)
+                    var bitmap = BitmapFactory.decodeStream(inputStream)
+//                    selectedImagePath = getPathFromUri(imageView)
+                    selectedImagePath = Converters.bitmapToString(bitmap)
+                    binding.imageNote.setImageBitmap(bitmap)
+                    binding.imageNote.visibility = View.VISIBLE
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddNoteBinding.inflate(layoutInflater)
@@ -34,6 +60,7 @@ class AddNoteActivity : AppCompatActivity() {
         val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
         binding.textDateTime.text = formatter.format(Date())
         selectedColor = "#333333"
+        selectedImagePath = ""
         intiOptionColor()
         setViewSubtitleColor()
         binding.imageBack.setOnClickListener {
@@ -50,6 +77,8 @@ class AddNoteActivity : AppCompatActivity() {
                     binding.inputNoteSubTitle.text.toString(),
                     binding.inputNote.text.toString())
                 note.color = selectedColor
+                if (selectedImagePath != null)
+                    note.imagePath = selectedImagePath
                 val intent = Intent()
                 intent.putExtra("note", note)
                 setResult(RESULT_OK, intent)
@@ -128,10 +157,39 @@ class AddNoteActivity : AppCompatActivity() {
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor1).setImageResource(0)
             setViewSubtitleColor()
         }
+        //Add Image
+        layoutOptionColor.findViewById<LinearLayout>(R.id.layoutAddImage).setOnClickListener {
+            val permission: Array<String> = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            if (ContextCompat.checkSelfPermission(applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, permission, 123)
+            }else selectImage()
+        }
+    }
+
+    private fun selectImage() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        arl.launch(intent)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 123 && grantResults.isNotEmpty())
+            selectImage()
+        else
+            Toast.makeText(this, "Permission Denied!", Toast.LENGTH_LONG).show()
     }
 
     private fun setViewSubtitleColor() {
         val gradientDrawable: GradientDrawable = findViewById<View>(R.id.viewSubTitle).background as GradientDrawable
         gradientDrawable.setColor(Color.parseColor(selectedColor))
     }
+
+
+
+
 }
