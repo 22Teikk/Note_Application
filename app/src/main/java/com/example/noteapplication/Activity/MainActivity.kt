@@ -9,11 +9,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.noteapplication.Adapter.NoteAdapter
 import com.example.noteapplication.Database.NoteDatabase
+import com.example.noteapplication.Listener.NotesListener
 import com.example.noteapplication.Model.Note
 import com.example.noteapplication.ViewModel.NoteViewModel
 import com.example.noteapplication.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NotesListener {
     lateinit var viewModel: NoteViewModel
     private lateinit var database: NoteDatabase
     private lateinit var binding: ActivityMainBinding
@@ -24,6 +25,16 @@ class MainActivity : AppCompatActivity() {
             val note = result.data?.getSerializableExtra("note") as Note
             note?.let {
                 viewModel.insertNote(note)
+            }
+        }
+    }
+
+    val arlUpdate = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val note = result.data?.getSerializableExtra("note") as Note
+            note?.let {
+                viewModel.updateNote(note)
+                noteAdapter.notifyDataSetChanged()
             }
         }
     }
@@ -47,9 +58,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUI() {
-        noteAdapter = NoteAdapter()
+        noteAdapter = NoteAdapter(this)
         binding.noteRecyclerView.setHasFixedSize(true)
         binding.noteRecyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.noteRecyclerView.adapter = noteAdapter
+    }
+
+    override fun onNoteClicked(note: Note) {
+        val intent = Intent(this, AddNoteActivity::class.java).apply {
+            this.putExtra("isViewOrUpdate", true)
+            this.putExtra("note", note)
+        }
+        arlUpdate.launch(intent)
     }
 }

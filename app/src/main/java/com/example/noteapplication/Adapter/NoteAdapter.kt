@@ -8,12 +8,15 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.noteapplication.Listener.NotesListener
 import com.example.noteapplication.Model.Note
 import com.example.noteapplication.R
 import com.example.noteapplication.Utilities.Converters
 import com.makeramen.roundedimageview.RoundedImageView
 
-class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
+class NoteAdapter(
+    val notesListener: NotesListener
+): RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
     inner class NoteViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val textTitle = itemView.findViewById<TextView>(R.id.textTitle)
         val textSubTitle = itemView.findViewById<TextView>(R.id.textSubTitle)
@@ -23,7 +26,6 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
     }
 
     var listNote = ArrayList<Note>()
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
         return NoteViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_note, parent, false))
@@ -48,6 +50,9 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
         }else
             holder.imageNoteItem.visibility = View.GONE
 
+        holder.layoutNote.setOnClickListener {
+            notesListener.onNoteClicked(currentNote)
+        }
     }
 
     fun updateList(newList: List<Note>) {
