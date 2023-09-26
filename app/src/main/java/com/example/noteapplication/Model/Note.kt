@@ -3,6 +3,8 @@ package com.example.noteapplication.Model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.io.Serializable
+import java.util.Calendar
+import java.util.Date
 
 @Entity(tableName = "note_table")
 data class Note(
@@ -16,4 +18,5 @@ data class Note(
     var imagePath: String = ""
     var color: String = ""
     var webLink: String = ""
+    var dateTimeAlert: String = ""
 }

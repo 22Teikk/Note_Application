@@ -1,5 +1,7 @@
 package com.example.noteapplication.Activity
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
@@ -31,6 +33,7 @@ import com.example.noteapplication.databinding.ActivityAddNoteBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 
 
@@ -44,6 +47,11 @@ class AddNoteActivity : AppCompatActivity() {
     private var selectedUri: String = ""
     private var isUpdate = false
     private lateinit var oldNote: Note
+    var day = 0
+    var year = 0
+    var month = 0
+    var hour = 0
+    var minute = 0
     val arl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val imageView = result.data?.data as Uri
@@ -220,6 +228,10 @@ class AddNoteActivity : AppCompatActivity() {
             showDialogURL()
         }
 
+        //Add Time
+        layoutOptionColor.findViewById<LinearLayout>(R.id.layoutAddTime).setOnClickListener {
+            showDatePickerDialog()
+        }
     }
 
     private fun setClickColor() {
@@ -336,5 +348,61 @@ class AddNoteActivity : AppCompatActivity() {
         alertDialog.show()
     }
 
+    private fun showDatePickerDialog() {
+        val calendar = Calendar.getInstance()
+        val currentYear = calendar.get(Calendar.YEAR)
+        val currentmonth = calendar.get(Calendar.MONTH)
+        val currentday = calendar.get(Calendar.DAY_OF_MONTH)
+        val datePickerDialog = DatePickerDialog(
+            this,
+            { view, selectedYear, selectedMonth, selectedDay ->
+                val selectedCalendar = Calendar.getInstance()
+                selectedCalendar.set(selectedYear, selectedMonth, selectedDay)
+                year = selectedYear
+                month = selectedMonth + 1
+                day = selectedDay
+                showTimePicker()
+            },
+            currentYear,
+            currentmonth,
+            currentday
+        )
 
+        datePickerDialog.datePicker.minDate = calendar.timeInMillis
+        datePickerDialog.show()
+    }
+
+    fun showTimePicker() {
+        val calendar = Calendar.getInstance()
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+
+        val timePickerDialog = TimePickerDialog(
+            this,
+            { view, selectedHour, selectedMinute ->
+                // Xử lý thời gian đã chọn ở đây\
+
+                val selectedCalendar = Calendar.getInstance()
+                hour = selectedHour
+                minute = selectedMinute
+                selectedCalendar.set(Calendar.YEAR, year)
+                selectedCalendar.set(Calendar.MONTH, month - 1)
+                selectedCalendar.set(Calendar.DAY_OF_MONTH, day)
+                selectedCalendar.set(Calendar.MINUTE, minute)
+                selectedCalendar.set(Calendar.HOUR_OF_DAY, hour)
+                if (selectedCalendar.time >= calendar.time) {
+                    val simpleDateFormat = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
+                    binding.textDateTimeAlert.setText(simpleDateFormat.format(selectedCalendar.time))
+                    binding.layoutTimeAlert.visibility = View.VISIBLE
+                }else Toast.makeText(this, "Time is not valid", Toast.LENGTH_LONG).show()
+
+            },
+            currentHour,
+            currentMinute,
+            true // true để hiển thị 24 giờ
+        )
+
+
+        timePickerDialog.show()
+    }
 }
