@@ -198,6 +198,8 @@ class AddNoteActivity : AppCompatActivity() {
         binding.imageSave.setOnClickListener {
             if (binding.inputNoteTitle.text.isEmpty())
                 Toast.makeText(this, "Note title can't be empty!", Toast.LENGTH_LONG).show()
+            else if (binding.inputNoteSubTitle.text.isEmpty())
+                Toast.makeText(this, "Note subTitle can't be empty!", Toast.LENGTH_LONG).show()
             else {
                 val note: Note
                 if (isUpdate) {
@@ -368,8 +370,12 @@ class AddNoteActivity : AppCompatActivity() {
     fun cancelScheduledNotification() {
         val alarmManager = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, AlarmNotification::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE)
+        val pendingIntent = PendingIntent.getBroadcast(
+            applicationContext,
+            notificationID,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         // Hủy lịch thông báo bằng cách sử dụng PendingIntent
         alarmManager.cancel(pendingIntent)
