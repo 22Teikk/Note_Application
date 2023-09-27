@@ -25,6 +25,7 @@ class NoteAdapter(
         val textDateTime = itemView.findViewById<TextView>(R.id.textDateTime)
         val layoutNote = itemView.findViewById<LinearLayout>(R.id.layoutNote)
         val imageNoteItem = itemView.findViewById<RoundedImageView>(R.id.imageNoteItem)
+        val textDateTimeAlert = itemView.findViewById<TextView>(R.id.textDateTimeAlert)
     }
 
     var listNote = ArrayList<Note>()
@@ -51,6 +52,11 @@ class NoteAdapter(
             holder.imageNoteItem.visibility = View.VISIBLE
         }else
             holder.imageNoteItem.visibility = View.GONE
+
+        currentNote.dateTimeAlert?.let {
+            holder.textDateTimeAlert.visibility = View.VISIBLE
+            holder.textDateTimeAlert.setText(currentNote.dateTimeAlert)
+        }
 
         holder.layoutNote.setOnClickListener {
             notesListener.onNoteClicked(currentNote)

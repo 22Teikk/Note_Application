@@ -93,11 +93,13 @@
                    android:textColor="#CC4D4D"
                    android:textSize="@dimen/_10ssp"
                    />
+
                <ImageView
+                   android:id="@+id/imageDeleteAlert"
                    android:layout_width="0dp"
                    android:layout_height="wrap_content"
-                   android:layout_weight="1"
                    android:layout_gravity="right"
+                   android:layout_weight="1"
                    android:src="@drawable/baseline_delete_24"
                    app:tint="@color/colorWhite" />
            </LinearLayout>

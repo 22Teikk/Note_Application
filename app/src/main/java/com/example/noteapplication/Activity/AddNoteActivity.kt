@@ -1,15 +1,23 @@
 package com.example.noteapplication.Activity
 
+import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.DatePickerDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
@@ -26,6 +34,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.noteapplication.Model.Note
+import com.example.noteapplication.Notification.AlarmNotification
+import com.example.noteapplication.Notification.channelID
+import com.example.noteapplication.Notification.imageExtra
+import com.example.noteapplication.Notification.messageExtra
+import com.example.noteapplication.Notification.notificationID
+import com.example.noteapplication.Notification.titleExtra
 import com.example.noteapplication.R
 import com.example.noteapplication.Utilities.Converters
 import com.example.noteapplication.ViewModel.NoteViewModel
@@ -76,7 +90,6 @@ class AddNoteActivity : AppCompatActivity() {
         noteViewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
         layoutOptionColor = findViewById<LinearLayout>(R.id.layoutOptionNote)
         try {
-
             oldNote = intent.getSerializableExtra("note") as Note
             if (oldNote != null)
                 isUpdate = true
@@ -85,6 +98,10 @@ class AddNoteActivity : AppCompatActivity() {
             binding.textDateTime.setText(oldNote.dateTime)
             binding.inputNoteSubTitle.setText(oldNote.subTitle)
             binding.inputNote.setText(oldNote.noteText)
+            if (oldNote.dateTimeAlert != "") {
+                binding.layoutTimeAlert.visibility = View.VISIBLE
+                binding.textDateTimeAlert.setText(oldNote.dateTimeAlert)
+            }
             if (oldNote.imagePath != "") {
                 selectedImagePath = oldNote.imagePath
                 binding.imageNote.setImageBitmap(Converters.stringToBitmap(oldNote.imagePath))
@@ -162,6 +179,16 @@ class AddNoteActivity : AppCompatActivity() {
             binding.imageRemoveImage.visibility = View.GONE
         }
 
+        binding.imageDeleteAlert.setOnClickListener {
+            binding.layoutTimeAlert.visibility = View.GONE
+            day = 0
+            year = 0
+            month = 0
+            hour = 0
+            minute = 0
+            cancelScheduledNotification()
+        }
+
         intiOptionColor()
         setViewSubtitleColor()
         binding.imageBack.setOnClickListener {
@@ -192,6 +219,28 @@ class AddNoteActivity : AppCompatActivity() {
 
                 if (binding.layoutWebURL.visibility == View.VISIBLE)
                     note.webLink = selectedUri
+
+
+                if (day != 0 && year != 0 && month != 0 && hour != 0 && minute != 0) {
+                    //Add Notification
+                    val permission: Array<String> =
+                        arrayOf(android.Manifest.permission.POST_NOTIFICATIONS)
+                    if (ContextCompat.checkSelfPermission(
+                            applicationContext,
+                            android.Manifest.permission.POST_NOTIFICATIONS
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        ActivityCompat.requestPermissions(this, permission, notificationID)
+                    } else runNotification()
+                    val simpleDateFormat = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
+                    val calendar = Calendar.getInstance()
+                    calendar.set(Calendar.YEAR, year)
+                    calendar.set(Calendar.MONTH, month - 1)
+                    calendar.set(Calendar.DAY_OF_MONTH, day)
+                    calendar.set(Calendar.MINUTE, minute)
+                    calendar.set(Calendar.HOUR_OF_DAY, hour)
+                    note.dateTimeAlert = simpleDateFormat.format(calendar.time)
+                }
                 val intent = Intent()
                 intent.putExtra("note", note)
                 setResult(RESULT_OK, intent)
@@ -310,8 +359,23 @@ class AddNoteActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 123 && grantResults.isNotEmpty())
             selectImage()
+        else if (requestCode == notificationID && grantResults.isNotEmpty())
+            runNotification()
         else
             Toast.makeText(this, "Permission Denied!", Toast.LENGTH_LONG).show()
+    }
+
+    fun cancelScheduledNotification() {
+        val alarmManager = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, AlarmNotification::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE)
+
+        // Hủy lịch thông báo bằng cách sử dụng PendingIntent
+        alarmManager.cancel(pendingIntent)
+
+        // Đảm bảo rằng PendingIntent không còn sử dụng bằng cách hủy nó
+        pendingIntent.cancel()
     }
 
     //Set background note
@@ -401,8 +465,63 @@ class AddNoteActivity : AppCompatActivity() {
             currentMinute,
             true // true để hiển thị 24 giờ
         )
-
-
         timePickerDialog.show()
+    }
+
+    @SuppressLint("ScheduleExactAlarm")
+    private fun runNotification() {
+        onCreateNotification()
+        val intent = Intent(this, AlarmNotification::class.java)
+        intent.putExtra(titleExtra, binding.inputNoteTitle.text.toString())
+        intent.putExtra(messageExtra, binding.inputNoteSubTitle.text.toString())
+        intent.putExtra(imageExtra, selectedImagePath)
+        val pendingIntent = PendingIntent.getBroadcast(
+            applicationContext,
+            notificationID,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val time = getTime()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                time,
+                pendingIntent
+            )
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                time,
+                pendingIntent
+            )
+        } else {
+            alarmManager.set(
+                AlarmManager.RTC_WAKEUP,
+                time,
+                pendingIntent
+            )
+        }
+    }
+
+    private fun getTime(): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month-1, day, hour, minute, 0)
+        return calendar.timeInMillis
+    }
+
+    private fun onCreateNotification() {
+        val name = "Noti_Channel"
+        val des = "temnsdf"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelID,
+                name,
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
     }
 }
