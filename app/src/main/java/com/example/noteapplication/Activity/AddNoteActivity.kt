@@ -61,11 +61,11 @@ class AddNoteActivity : AppCompatActivity() {
     private var selectedUri: String = ""
     private var isUpdate = false
     private lateinit var oldNote: Note
-    var day = 0
-    var year = 0
-    var month = 0
-    var hour = 0
-    var minute = 0
+    var day = -1
+    var year = -1
+    var month = -1
+    var hour = -1
+    var minute = -1
     val arl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val imageView = result.data?.data as Uri
@@ -181,11 +181,11 @@ class AddNoteActivity : AppCompatActivity() {
 
         binding.imageDeleteAlert.setOnClickListener {
             binding.layoutTimeAlert.visibility = View.GONE
-            day = 0
-            year = 0
-            month = 0
-            hour = 0
-            minute = 0
+            day = -1
+            year = -1
+            month = -1
+            hour = -1
+            minute = -1
             cancelScheduledNotification()
         }
 
@@ -221,7 +221,7 @@ class AddNoteActivity : AppCompatActivity() {
                     note.webLink = selectedUri
 
 
-                if (day != 0 && year != 0 && month != 0 && hour != 0 && minute != 0) {
+                if (day != -1 && year != -1 && month != -1 && hour != -1 && minute != -1) {
                     //Add Notification
                     val permission: Array<String> =
                         arrayOf(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -445,7 +445,6 @@ class AddNoteActivity : AppCompatActivity() {
             this,
             { view, selectedHour, selectedMinute ->
                 // Xử lý thời gian đã chọn ở đây\
-
                 val selectedCalendar = Calendar.getInstance()
                 hour = selectedHour
                 minute = selectedMinute
