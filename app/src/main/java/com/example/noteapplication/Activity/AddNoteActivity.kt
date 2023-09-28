@@ -52,7 +52,7 @@ import java.util.Date
 
 
 class AddNoteActivity : AppCompatActivity() {
-    private lateinit var layoutOptionColor :LinearLayout
+    private lateinit var layoutOptionColor: LinearLayout
     private var oldID: Int = -1
     private lateinit var binding: ActivityAddNoteBinding
     private lateinit var noteViewModel: NoteViewModel
@@ -66,23 +66,25 @@ class AddNoteActivity : AppCompatActivity() {
     var month = -1
     var hour = -1
     var minute = -1
-    val arl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val imageView = result.data?.data as Uri
-            if (imageView != null) {
-                try {
-                    var inputStream = contentResolver.openInputStream(imageView)
-                    var bitmap = BitmapFactory.decodeStream(inputStream)
-                    selectedImagePath = Converters.bitmapToString(bitmap)
-                    binding.imageNote.setImageBitmap(bitmap)
-                    binding.imageNote.visibility = View.VISIBLE
-                    binding.imageRemoveImage.visibility = View.VISIBLE
-                } catch (e: Exception) {
-                    e.printStackTrace()
+    val arl =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val imageView = result.data?.data as Uri
+                if (imageView != null) {
+                    try {
+                        var inputStream = contentResolver.openInputStream(imageView)
+                        var bitmap = BitmapFactory.decodeStream(inputStream)
+                        selectedImagePath = Converters.bitmapToString(bitmap)
+                        binding.imageNote.setImageBitmap(bitmap)
+                        binding.imageNote.visibility = View.VISIBLE
+                        binding.imageRemoveImage.visibility = View.VISIBLE
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
         }
-    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddNoteBinding.inflate(layoutInflater)
@@ -118,27 +120,38 @@ class AddNoteActivity : AppCompatActivity() {
                 selectedColor = oldNote.color
                 when (oldNote.color) {
                     "#E79797" -> {
-                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor1).setImageResource(R.drawable.baseline_done_24)
+                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor1)
+                            .setImageResource(R.drawable.baseline_done_24)
                     }
+
                     "#D3C292" -> {
-                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor2).setImageResource(R.drawable.baseline_done_24)
+                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor2)
+                            .setImageResource(R.drawable.baseline_done_24)
                     }
+
                     "#B6F892" -> {
-                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor3).setImageResource(R.drawable.baseline_done_24)
+                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor3)
+                            .setImageResource(R.drawable.baseline_done_24)
                     }
+
                     "#5EC9C8" -> {
-                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor4).setImageResource(R.drawable.baseline_done_24)
+                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor4)
+                            .setImageResource(R.drawable.baseline_done_24)
                     }
+
                     "#1594B8" -> {
-                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor5).setImageResource(R.drawable.baseline_done_24)
+                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor5)
+                            .setImageResource(R.drawable.baseline_done_24)
                     }
+
                     "#602587" -> {
-                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor6).setImageResource(R.drawable.baseline_done_24)
+                        layoutOptionColor.findViewById<ImageView>(R.id.imageColor6)
+                            .setImageResource(R.drawable.baseline_done_24)
                     }
                 }
             }
             setViewSubtitleColor()
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
 
@@ -197,23 +210,27 @@ class AddNoteActivity : AppCompatActivity() {
 
         binding.imageSave.setOnClickListener {
             if (binding.inputNoteTitle.text.isEmpty())
-                Toast.makeText(this, "Note title can't be empty!", Toast.LENGTH_LONG).show()
+                showInputDialog("Title")
             else if (binding.inputNoteSubTitle.text.isEmpty())
-                Toast.makeText(this, "Note subTitle can't be empty!", Toast.LENGTH_LONG).show()
+                showInputDialog("SubTitle")
             else {
                 val note: Note
                 if (isUpdate) {
-                    note = Note(oldID,
+                    note = Note(
+                        oldID,
                         binding.inputNoteTitle.text.toString(),
                         binding.textDateTime.text.toString(),
                         binding.inputNoteSubTitle.text.toString(),
-                        binding.inputNote.text.toString())
-                }else {
-                    note = Note(0,
+                        binding.inputNote.text.toString()
+                    )
+                } else {
+                    note = Note(
+                        0,
                         binding.inputNoteTitle.text.toString(),
                         binding.textDateTime.text.toString(),
                         binding.inputNoteSubTitle.text.toString(),
-                        binding.inputNote.text.toString())
+                        binding.inputNote.text.toString()
+                    )
                 }
                 note.color = selectedColor
                 if (selectedImagePath != null)
@@ -259,18 +276,23 @@ class AddNoteActivity : AppCompatActivity() {
         layoutOptionColor.findViewById<TextView>(R.id.textOption).setOnClickListener {
             if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED) {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-            }else bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            } else bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
 
         setClickColor()
 
         //Add Image
         layoutOptionColor.findViewById<LinearLayout>(R.id.layoutAddImage).setOnClickListener {
-            val permission: Array<String> = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            val permission: Array<String> =
+                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-            if (ContextCompat.checkSelfPermission(applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(this, permission, 123)
-            }else selectImage()
+            } else selectImage()
         }
 
         //Add URL
@@ -288,7 +310,8 @@ class AddNoteActivity : AppCompatActivity() {
     private fun setClickColor() {
         layoutOptionColor.findViewById<View>(R.id.viewColor1).setOnClickListener {
             selectedColor = "#E79797"
-            layoutOptionColor.findViewById<ImageView>(R.id.imageColor1).setImageResource(R.drawable.baseline_done_24)
+            layoutOptionColor.findViewById<ImageView>(R.id.imageColor1)
+                .setImageResource(R.drawable.baseline_done_24)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor2).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor3).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor4).setImageResource(0)
@@ -298,7 +321,8 @@ class AddNoteActivity : AppCompatActivity() {
         }
         layoutOptionColor.findViewById<View>(R.id.viewColor2).setOnClickListener {
             selectedColor = "#D3C292"
-            layoutOptionColor.findViewById<ImageView>(R.id.imageColor2).setImageResource(R.drawable.baseline_done_24)
+            layoutOptionColor.findViewById<ImageView>(R.id.imageColor2)
+                .setImageResource(R.drawable.baseline_done_24)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor1).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor3).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor4).setImageResource(0)
@@ -308,7 +332,8 @@ class AddNoteActivity : AppCompatActivity() {
         }
         layoutOptionColor.findViewById<View>(R.id.viewColor3).setOnClickListener {
             selectedColor = "#B6F892"
-            layoutOptionColor.findViewById<ImageView>(R.id.imageColor3).setImageResource(R.drawable.baseline_done_24)
+            layoutOptionColor.findViewById<ImageView>(R.id.imageColor3)
+                .setImageResource(R.drawable.baseline_done_24)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor2).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor1).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor4).setImageResource(0)
@@ -318,7 +343,8 @@ class AddNoteActivity : AppCompatActivity() {
         }
         layoutOptionColor.findViewById<View>(R.id.viewColor4).setOnClickListener {
             selectedColor = "#5EC9C8"
-            layoutOptionColor.findViewById<ImageView>(R.id.imageColor4).setImageResource(R.drawable.baseline_done_24)
+            layoutOptionColor.findViewById<ImageView>(R.id.imageColor4)
+                .setImageResource(R.drawable.baseline_done_24)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor2).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor3).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor1).setImageResource(0)
@@ -328,7 +354,8 @@ class AddNoteActivity : AppCompatActivity() {
         }
         layoutOptionColor.findViewById<View>(R.id.viewColor5).setOnClickListener {
             selectedColor = "#1594B8"
-            layoutOptionColor.findViewById<ImageView>(R.id.imageColor5).setImageResource(R.drawable.baseline_done_24)
+            layoutOptionColor.findViewById<ImageView>(R.id.imageColor5)
+                .setImageResource(R.drawable.baseline_done_24)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor2).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor3).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor4).setImageResource(0)
@@ -338,7 +365,8 @@ class AddNoteActivity : AppCompatActivity() {
         }
         layoutOptionColor.findViewById<View>(R.id.viewColor6).setOnClickListener {
             selectedColor = "#602587"
-            layoutOptionColor.findViewById<ImageView>(R.id.imageColor6).setImageResource(R.drawable.baseline_done_24)
+            layoutOptionColor.findViewById<ImageView>(R.id.imageColor6)
+                .setImageResource(R.drawable.baseline_done_24)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor2).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor3).setImageResource(0)
             layoutOptionColor.findViewById<ImageView>(R.id.imageColor4).setImageResource(0)
@@ -386,7 +414,8 @@ class AddNoteActivity : AppCompatActivity() {
 
     //Set background note
     private fun setViewSubtitleColor() {
-        val gradientDrawable: GradientDrawable = findViewById<View>(R.id.viewSubTitle).background as GradientDrawable
+        val gradientDrawable: GradientDrawable =
+            findViewById<View>(R.id.viewSubTitle).background as GradientDrawable
         gradientDrawable.setColor(Color.parseColor(selectedColor))
     }
 
@@ -402,7 +431,7 @@ class AddNoteActivity : AppCompatActivity() {
         textAdd.setOnClickListener {
             if (inputURL.text.isEmpty())
                 Toast.makeText(this, "Please entering URL", Toast.LENGTH_LONG).show()
-            else if(!Patterns.WEB_URL.matcher(inputURL.text).matches())
+            else if (!Patterns.WEB_URL.matcher(inputURL.text).matches())
                 Toast.makeText(this, "URL Invalid", Toast.LENGTH_LONG).show()
             else {
                 binding.textWebURL.text = inputURL.text
@@ -463,7 +492,7 @@ class AddNoteActivity : AppCompatActivity() {
                     val simpleDateFormat = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
                     binding.textDateTimeAlert.setText(simpleDateFormat.format(selectedCalendar.time))
                     binding.layoutTimeAlert.visibility = View.VISIBLE
-                }else Toast.makeText(this, "Time is not valid", Toast.LENGTH_LONG).show()
+                } else Toast.makeText(this, "Time is not valid", Toast.LENGTH_LONG).show()
 
             },
             currentHour,
@@ -511,7 +540,7 @@ class AddNoteActivity : AppCompatActivity() {
 
     private fun getTime(): Long {
         val calendar = Calendar.getInstance()
-        calendar.set(year, month-1, day, hour, minute, 0)
+        calendar.set(year, month - 1, day, hour, minute, 0)
         return calendar.timeInMillis
     }
 
@@ -528,5 +557,14 @@ class AddNoteActivity : AppCompatActivity() {
             notificationManager.createNotificationChannel(channel)
         }
 
+    }
+
+    fun showInputDialog(field: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Please enter a ${field}")
+        builder.setPositiveButton("OK") { _, _ ->
+        }
+        val dialog = builder.create()
+        dialog.show()
     }
 }

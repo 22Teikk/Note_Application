@@ -43,49 +43,56 @@ class MainActivity : AppCompatActivity(), NotesListener {
     lateinit var noteAdapter: NoteAdapter
     private lateinit var noteList: ArrayList<Note>
 
-    val arlImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val imageView = result.data?.data as Uri
-            if (imageView != null) {
-                try {
-                    var inputStream = contentResolver.openInputStream(imageView)
-                    var bitmap = BitmapFactory.decodeStream(inputStream)
-                    val intent = Intent(this, AddNoteActivity::class.java).apply {
-                        this.putExtra("fromQuickAction", true)
-                        this.putExtra("type", "image")
-                        this.putExtra("image", Converters.bitmapToString(bitmap))
+    val arlImage =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val imageView = result.data?.data as Uri
+                if (imageView != null) {
+                    try {
+                        var inputStream = contentResolver.openInputStream(imageView)
+                        var bitmap = BitmapFactory.decodeStream(inputStream)
+                        val intent = Intent(this, AddNoteActivity::class.java).apply {
+                            this.putExtra("fromQuickAction", true)
+                            this.putExtra("type", "image")
+                            this.putExtra("image", Converters.bitmapToString(bitmap))
+                        }
+                        arl.launch(intent)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
-                    arl.launch(intent)
-                } catch (e: Exception) {
-                    e.printStackTrace()
                 }
             }
         }
-    }
 
-    val arl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val note = result.data?.getSerializableExtra("note") as Note
-            note?.let {
-                viewModel.insertNote(note)
+    val arl =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val note = result.data?.getSerializableExtra("note") as Note
+                note?.let {
+                    viewModel.insertNote(note)
+                }
             }
         }
-    }
 
-    val arlUpdate = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val note = result.data?.getSerializableExtra("note") as Note
-            note?.let {
-                viewModel.updateNote(note)
-                noteAdapter.notifyDataSetChanged()
+    val arlUpdate =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val note = result.data?.getSerializableExtra("note") as Note
+                note?.let {
+                    viewModel.updateNote(note)
+                    noteAdapter.notifyDataSetChanged()
+                }
             }
         }
-    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))[NoteViewModel::class.java]
+        viewModel = ViewModelProvider(
+            this,
+            ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+        )[NoteViewModel::class.java]
         viewModel.readAllData.observe(this) { list ->
             list?.let {
                 noteList = it as ArrayList<Note>
@@ -101,13 +108,18 @@ class MainActivity : AppCompatActivity(), NotesListener {
         }
 
         binding.imageAddImage.setOnClickListener {
-            val permission: Array<String> = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-            if (ContextCompat.checkSelfPermission(applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            val permission: Array<String> =
+                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(this, permission, 123)
-            }else selectImage()
+            } else selectImage()
         }
 
-        binding.inputSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+        binding.inputSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -136,7 +148,7 @@ class MainActivity : AppCompatActivity(), NotesListener {
         textAdd.setOnClickListener {
             if (inputURL.text.isEmpty())
                 Toast.makeText(this, "Please entering URL", Toast.LENGTH_LONG).show()
-            else if(!Patterns.WEB_URL.matcher(inputURL.text).matches())
+            else if (!Patterns.WEB_URL.matcher(inputURL.text).matches())
                 Toast.makeText(this, "URL Invalid", Toast.LENGTH_LONG).show()
             else {
                 var intent = Intent(this, AddNoteActivity::class.java).apply {
@@ -154,19 +166,18 @@ class MainActivity : AppCompatActivity(), NotesListener {
         }
         alertDialog.show()
     }
+
     private fun filterList(newText: String?) {
         if (newText != null) {
             val filterList = ArrayList<Note>()
-            for(i in noteList) {
-                if(i.title.lowercase(Locale.ROOT).contains(newText)) {
+            for (i in noteList) {
+                if (i.title.lowercase(Locale.ROOT).contains(newText)) {
                     filterList.add(i)
                 }
             }
             if (filterList.isEmpty()) {
-                Toast.makeText(this, "No data found", Toast.LENGTH_LONG).show()
                 noteAdapter.updateList(emptyList())
-            }
-            else
+            } else
                 noteAdapter.updateList(filterList)
         }
     }
@@ -174,7 +185,8 @@ class MainActivity : AppCompatActivity(), NotesListener {
     private fun initUI() {
         noteAdapter = NoteAdapter(this)
         binding.noteRecyclerView.setHasFixedSize(true)
-        binding.noteRecyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        binding.noteRecyclerView.layoutManager =
+            StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.noteRecyclerView.adapter = noteAdapter
     }
 
